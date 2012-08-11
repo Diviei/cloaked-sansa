@@ -29,6 +29,8 @@ class Application(tornado.web.Application):
 
 class Handler(tornado.websocket.WebSocketHandler):
     clients = set()
+    positionY = 0
+    speed = 100
 
     def open(self):
     	print "WebSocket opened"
@@ -41,9 +43,15 @@ class Handler(tornado.websocket.WebSocketHandler):
     @classmethod
     def send_updates(cls, text):
         logging.info("sending message to %d waiters", len(cls.clients))
+
+        if text == 'moveUp':
+            cls.positionY = cls.positionY-cls.speed
+        elif text == 'moveDown':
+            cls.positionY = cls.positionY+cls.speed
+
         for client in cls.clients:
             try:
-                client.write_message(text)
+                client.write_message(str(cls.positionY))
             except:
                 logging.error("Error sending message", exc_info=True)
 
